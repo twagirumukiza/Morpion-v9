@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morpion Néon V3.0</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>MORPION <span class="neon-sub">NÉON</span> <span class="version">V3</span></h1>
+            <div class="top-controls">
+                <button id="theme-toggle" title="Changer de thème"><i class="fa-solid fa-moon"></i></button>
+                <button id="sound-toggle" title="Activer/Désactiver le son"><i class="fa-solid fa-volume-high"></i></button>
+            </div>
+        </header>
+
+        <!-- MENU PRINCIPAL -->
+        <section id="menu-screen" class="screen active">
+            <div class="menu-card">
+                <h2>Choisissez un mode</h2>
+                <button class="btn-neon primary" data-mode="ai"><i class="fa-solid fa-robot"></i> Solo contre IA</button>
+                <button class="btn-neon secondary" data-mode="local"><i class="fa-solid fa-user-group"></i> 2 Joueurs (Local)</button>
+                <button class="btn-neon accent" data-mode="online"><i class="fa-solid fa-globe"></i> Multijoueur en ligne</button>
+                <button class="btn-neon ghost" id="btn-stats"><i class="fa-solid fa-chart-bar"></i> Statistiques</button>
+            </div>
+        </section>
+
+        <!-- CONFIGURATION IA -->
+        <section id="ai-config-screen" class="screen">
+            <div class="menu-card">
+                <h2>Configuration IA</h2>
+
+                <label>Taille du plateau :</label>
+                <select id="board-size">
+                    <option value="3">3 × 3 (3 pions, aligner 3)</option>
+                    <option value="5">5 × 5 (12 pions, aligner 4)</option>
+                    <option value="7">7 × 7 (24 pions, aligner 5)</option>
+                </select>
+
+                <label>Niveau de difficulté :</label>
+                <select id="ai-difficulty">
+                    <option value="easy">Facile (Aléatoire)</option>
+                    <option value="medium">Moyen (Heuristiques)</option>
+                    <option value="unbeatable" selected>Imbattable (Minimax)</option>
+                </select>
+
+                <label>Vous jouez avec :</label>
+                <div class="symbol-select">
+                    <button class="symbol-btn active" data-symbol="X">X (Bleu)</button>
+                    <button class="symbol-btn" data-symbol="O">O (Rose)</button>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-neon ghost" id="back-to-menu-ai">Retour</button>
+                    <button class="btn-neon primary" id="start-ai-game">Jouer</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- MULTIJOUEUR -->
+        <section id="online-screen" class="screen">
+            <div class="menu-card">
+                <h2>Multijoueur en Ligne</h2>
+                <p class="info-text">Connecté via Firebase Realtime</p>
+
+                <label>Votre nom :</label>
+                <input type="text" id="host-name" placeholder="Entrez votre nom" value="Joueur 1">
+
+                <label>Taille du plateau :</label>
+                <select id="online-board-size">
+                    <option value="3">3 × 3 (3 pions, aligner 3)</option>
+                    <option value="5">5 × 5 (12 pions, aligner 4)</option>
+                    <option value="7">7 × 7 (24 pions, aligner 5)</option>
+                </select>
+
+                <button class="btn-neon primary" id="create-room"><i class="fa-solid fa-plus"></i> Créer un salon</button>
+
+                <div class="separator"><span>ou</span></div>
+
+                <label>Rejoindre un salon :</label>
+                <div class="join-box">
+                    <input type="text" id="room-code-input" placeholder="Code du salon...">
+                    <button class="btn-neon secondary" id="join-room"><i class="fa-solid fa-door-open"></i></button>
+                </div>
+                <button class="btn-neon ghost" id="back-to-menu-online">Retour</button>
+            </div>
+        </section>
+
+        <!-- LOBBY -->
+        <section id="lobby-screen" class="screen">
+            <div class="menu-card">
+                <h2><i class="fa-solid fa-check-circle"></i> Salon créé !</h2>
+                <p class="info-text">Partagez ce code ou ce lien avec votre adversaire</p>
+
+                <div class="share-box">
+                    <div class="share-item">
+                        <label><i class="fa-solid fa-hashtag"></i> Code du salon</label>
+                        <div class="share-value" id="lobby-code">---</div>
+                        <button class="btn-neon ghost" id="copy-lobby-code"><i class="fa-solid fa-copy"></i> Copier le code</button>
+                        <div class="copied-feedback" id="feedback-code"></div>
+                    </div>
+                    <div class="share-item">
+                        <label><i class="fa-solid fa-link"></i> Lien d'invitation</label>
+                        <div class="share-value small" id="lobby-link">---</div>
+                        <button class="btn-neon ghost" id="copy-lobby-link"><i class="fa-solid fa-share-nodes"></i> Copier le lien</button>
+                        <div class="copied-feedback" id="feedback-link"></div>
+                    </div>
+                </div>
+
+                <div class="lobby-status-box">
+                    <div class="spinner"></div>
+                    <p class="info-text" id="lobby-status">En attente d'un adversaire...</p>
+                </div>
+
+                <button class="btn-neon danger" id="lobby-cancel"><i class="fa-solid fa-xmark"></i> Annuler</button>
+            </div>
+        </section>
+
+        <!-- JOIN -->
+        <section id="join-screen" class="screen">
+            <div class="menu-card">
+                <h2><i class="fa-solid fa-door-open"></i> Rejoindre une partie</h2>
+                <p class="info-text">Vous avez été invité à rejoindre un salon</p>
+
+                <label>Code du salon :</label>
+                <div class="share-value" id="join-code-display">---</div>
+
+                <label>Votre nom :</label>
+                <input type="text" id="join-player-name" placeholder="Entrez votre nom" value="Joueur 2">
+
+                <button class="btn-neon primary" id="btn-confirm-join"><i class="fa-solid fa-play"></i> Rejoindre la partie</button>
+                <button class="btn-neon ghost" id="back-to-menu-join">Retour au menu</button>
+            </div>
+        </section>
+
+        <!-- ÉCRAN DE JEU -->
+        <section id="game-screen" class="screen">
+            <div class="game-info">
+                <div class="player-badge x-badge active" id="badge-x">
+                    <i class="fa-solid fa-xmark"></i>
+                    <span id="score-x-val">0</span>
+                    <span class="pions-count" id="pions-x">(3)</span>
+                </div>
+                <div class="turn-indicator" id="turn-indicator">Tour de X</div>
+                <div class="player-badge o-badge" id="badge-o">
+                    <i class="fa-regular fa-circle"></i>
+                    <span id="score-o-val">0</span>
+                    <span class="pions-count" id="pions-o">(3)</span>
+                </div>
+            </div>
+
+            <div class="board-container">
+                <div class="board" id="board"></div>
+                <div class="winning-line" id="winning-line"></div>
+            </div>
+
+            <div class="game-controls">
+                <button class="btn-sm" id="btn-undo"><i class="fa-solid fa-rotate-left"></i> Annuler</button>
+                <button class="btn-sm" id="btn-restart"><i class="fa-solid fa-redo"></i> Recommencer</button>
+                <button class="btn-sm danger" id="btn-quit"><i class="fa-solid fa-right-from-bracket"></i> Quitter</button>
+            </div>
+        </section>
+
+        <!-- MODAL STATISTIQUES -->
+        <div id="stats-modal" class="modal">
+            <div class="modal-content">
+                <h2><i class="fa-solid fa-chart-pie"></i> Statistiques</h2>
+                <div class="stats-grid">
+                    <div class="stat-item"><span>Victoires X</span><strong id="stat-x">0</strong></div>
+                    <div class="stat-item"><span>Victoires O / IA</span><strong id="stat-o">0</strong></div>
+                    <div class="stat-item"><span>Matchs Nuls</span><strong id="stat-draws">0</strong></div>
+                    <div class="stat-item"><span>Total Parties</span><strong id="stat-total">0</strong></div>
+                    <div class="stat-item full"><span>% Victoire X</span><strong id="stat-winrate">0%</strong></div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-neon danger" id="reset-stats">Réinitialiser</button>
+                    <button class="btn-neon primary" id="close-stats">Fermer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL FIN DE PARTIE -->
+        <div id="gameover-modal" class="modal">
+            <div class="modal-content text-center">
+                <h2 id="gameover-title">Victoire de X !</h2>
+                <p id="gameover-subtitle">Superbe partie !</p>
+                <div class="modal-actions-col">
+                    <button class="btn-neon primary" id="btn-revenche">Revanche</button>
+                    <button class="btn-neon ghost" id="btn-back-menu">Menu Principal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signature -->
+        <footer class="app-footer">
+            <p>by <span class="neon-sub">twagirumukiza</span></p>
+        </footer>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
